@@ -41,8 +41,7 @@ with open(fragments_text_file) as file:
 
         # Paste fragment according to the mask in the alpha channel
         try:
-            if fragment[:, :, 3] > 0 :
-                background[y_top_left_corner_pos:y_bot_right_corner_pos, x_top_left_corner_pos:x_bot_right_corner_pos] = fragment
+            background[y_top_left_corner_pos:y_bot_right_corner_pos, x_top_left_corner_pos:x_bot_right_corner_pos][fragment[:, :, 3] > 0] = fragment[fragment[:, :, 3] > 0]
         except Exception as e:
             print(index + " " + str(e))
 
