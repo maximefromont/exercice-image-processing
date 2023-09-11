@@ -1,6 +1,8 @@
 import cv2 as cv
 import numpy as np
-from concurrent.futures import ThreadPoolExecutor
+import time as time
+
+time_start = time.time()
 
 target_resolution = (1707, 775)
 background_color = (128, 128, 128)
@@ -14,53 +16,59 @@ def rotate_image(image, theta):
     return result
 
 background = np.zeros((*target_resolution[::-1], 4), dtype=np.uint8)
-background[:, :, :3] = background_color
+background[:, :, :3] += np.array([*background_color], dtype=np.uint8)
 
-def process_fragment(fragment_info):
-    index, x_center_pos, y_center_pos, angle = fragment_info
-    x_center_pos = int(x_center_pos)
-    y_center_pos = int(y_center_pos)
-    angle = float(angle)
-
-    fragment = cv.imread(fragments_file_name_template.format(index), flags=cv.IMREAD_UNCHANGED)
-    fragment = rotate_image(fragment, angle)
-
-    fragment_size_y, fragment_size_x = fragment.shape[0], fragment.shape[1]
-    x_top_left_corner_pos = x_center_pos - fragment_size_x // 2
-    x_bot_right_corner_pos = x_center_pos + fragment_size_x // 2 + fragment_size_x % 2
-    y_top_left_corner_pos = y_center_pos - fragment_size_y // 2
-    y_bot_right_corner_pos = y_center_pos + fragment_size_y // 2 + fragment_size_y % 2
-
-    # Clip coordinates to stay within background bounds
-    x_top_left_corner_pos = max(0, x_top_left_corner_pos)
-    x_bot_right_corner_pos = min(target_resolution[0], x_bot_right_corner_pos)
-    y_top_left_corner_pos = max(0, y_top_left_corner_pos)
-    y_bot_right_corner_pos = min(target_resolution[1], y_bot_right_corner_pos)
-
-    fragment_x_start = max(0, -x_top_left_corner_pos)
-    fragment_x_end = min(fragment_size_x, x_bot_right_corner_pos - x_top_left_corner_pos)
-    fragment_y_start = max(0, -y_top_left_corner_pos)
-    fragment_y_end = min(fragment_size_y, y_bot_right_corner_pos - y_top_left_corner_pos)
-
-    background_x_start = x_top_left_corner_pos
-    background_x_end = x_top_left_corner_pos + fragment_x_end - fragment_x_start
-    background_y_start = y_top_left_corner_pos
-    background_y_end = y_top_left_corner_pos + fragment_y_end - fragment_y_start
-
-    mask = fragment[fragment_y_start:fragment_y_end, fragment_x_start:fragment_x_end, 3] > 0
-    background_mask = background[background_y_start:background_y_end, background_x_start:background_x_end, 3] > 0
-
-    background[background_y_start:background_y_end, background_x_start:background_x_end, :3][mask] = fragment[
-        fragment_y_start:fragment_y_end, fragment_x_start:fragment_x_end, :3][mask]
-    background[background_y_start:background_y_end, background_x_start:background_x_end, 3][mask] = 255
+fragment_counter = 0
 
 with open(fragments_text_file) as file:
-    fragment_infos = [line.split() for line in file]
+    for line in file:
+        # Get fragment info
+        index, x_center_pos, y_center_pos, angle = map(float, line.split())
+        x_center_pos, y_center_pos = int(x_center_pos), int(y_center_pos)
 
-# Use ThreadPoolExecutor for parallel processing
-with ThreadPoolExecutor() as executor:
-    executor.map(process_fragment, fragment_infos)
+        # Read and rotate
+        fragment = cv.imread(fragments_file_name_template.format(int(index)), flags=cv.IMREAD_UNCHANGED)
+        fragment = rotate_image(fragment, angle)
 
-cv.imshow("Result", background)
+        # Compute area to override
+        fragment_size_y, fragment_size_x = fragment.shape[0], fragment.shape[1]
+        x_top_left_corner_pos = x_center_pos - fragment_size_x // 2
+        x_bot_right_corner_pos = x_center_pos + fragment_size_x // 2
+        y_top_left_corner_pos = y_center_pos - fragment_size_y // 2
+        y_bot_right_corner_pos = y_center_pos + fragment_size_y // 2
+
+        # Ensure coordinates are within bounds
+        if (0 <= x_top_left_corner_pos < target_resolution[0] and
+            0 <= x_bot_right_corner_pos < target_resolution[0] and
+            0 <= y_top_left_corner_pos < target_resolution[1] and
+            0 <= y_bot_right_corner_pos < target_resolution[1]):
+
+            # Paste fragment with transparency
+            x1, x2 = max(x_top_left_corner_pos, 0), min(x_bot_right_corner_pos, target_resolution[0])
+            y1, y2 = max(y_top_left_corner_pos, 0), min(y_bot_right_corner_pos, target_resolution[1])
+
+            fragment_x1 = x1 - x_top_left_corner_pos
+            fragment_x2 = fragment_x1 + (x2 - x1)
+            fragment_y1 = y1 - y_top_left_corner_pos
+            fragment_y2 = fragment_y1 + (y2 - y1)
+
+            # Blend pixels manually with transparency
+            fragment_alpha = fragment[fragment_y1:fragment_y2, fragment_x1:fragment_x2, 3]
+            background_alpha = background[y1:y2, x1:x2, 3]
+
+            for c in range(3):  # RGB channels
+                background[y1:y2, x1:x2, c] = (
+                    (1 - fragment_alpha / 255.0) * background[y1:y2, x1:x2, c] +
+                    (fragment_alpha / 255.0) * fragment[fragment_y1:fragment_y2, fragment_x1:fragment_x2, c]
+                )
+            background[y1:y2, x1:x2, 3] = np.maximum(fragment_alpha, background_alpha)
+
+        print(fragment_counter)
+        fragment_counter += 1
+
+time_end = time.time()
+print("Time elapsed: ", time_end - time_start)
+
+cv.imshow("Result", background[:, :, :3])
 cv.waitKey(0)
 cv.destroyAllWindows()
