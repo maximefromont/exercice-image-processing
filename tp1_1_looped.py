@@ -23,7 +23,7 @@ background = cv.imread("Michelangelo_ThecreationofAdam_1707x775.jpg", flags=cv.I
 background = cv.cvtColor(background, cv.COLOR_RGB2RGBA)
 background[:, :, 0:3] //= 2
 
-fragment_counter = 0
+# fragment_counter = 0
 
 with open(fragments_text_file) as file:
     line: str
@@ -53,8 +53,8 @@ with open(fragments_text_file) as file:
                     if(i > 0 and i < target_resolution[0] and j > 0 and j < target_resolution[1]):
                         background[j, i, :] = fragment[j-y_top_left_corner_pos, i-x_top_left_corner_pos, :]
 
-        print(fragment_counter)
-        fragment_counter += 1
+        # print(fragment_counter)
+        # fragment_counter += 1
 
 time_end = time.time()
 print("Time elapsed: ", time_end - time_start)
