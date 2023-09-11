@@ -18,8 +18,10 @@ def rotate_image(image, theta):
     return result
 
 
-background = np.zeros((*target_resolution[::-1], 4), dtype=np.uint8)
-background += np.array([*background_color, 0], dtype=np.uint8)
+background = cv.imread("Michelangelo_ThecreationofAdam_1707x775.jpg", flags=cv.IMREAD_UNCHANGED)
+#Add an alha canal, then make the background semi-transparent
+background = cv.cvtColor(background, cv.COLOR_RGB2RGBA)
+background[:, :, 0:3] //= 2
 
 fragment_counter = 0
 
