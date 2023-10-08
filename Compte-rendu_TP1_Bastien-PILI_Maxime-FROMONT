@@ -1,0 +1,7 @@
+Compte-rendu :
+
+Avant que les consignes ne soient données, nous avons commencé l'exercice 1 en utilisant la bibliothèque Pillow. Le programme fonctionne bien, mais nous avont recommencé pour utiliser OpenCV.
+
+Le principal problème rencontré est le collage des images en respectant le canal alpha des fragments. Dans un premier temps les fragments collés sur l'image finale conservait leur partie transparente, qui était remplacé par un noir solide. Ce problème a d'abord été résolu en utilisant des masques, mais cette solution a introduit une erreur liée à l'indexage utilisé par numpy pour les fragments proches des bords que nous n'avons pas su résoudre. La version finale de notre programme a l'avantage de fonctionner, mais est extrèmement lente à l'execution car nous ne n'utilisons plus les fonctions de numpy qui sont elles, rapides.
+
+La deuxième partie du TP n'a pas vraiment posé problème.
