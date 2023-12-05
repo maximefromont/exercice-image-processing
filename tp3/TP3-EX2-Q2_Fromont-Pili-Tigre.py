@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import random
+import os
 
 def estimate_transformation(subset):
     src_pts = np.float32([kp1[m.queryIdx].pt for m in subset]).reshape(-1, 1, 2)
@@ -8,10 +9,6 @@ def estimate_transformation(subset):
 
     transformation, _ = cv2.estimateAffinePartial2D(src_pts, dst_pts)
     return transformation
-
-import cv2
-import numpy as np
-import os
 
 main_image_path = 'tp3/Domenichino_Virgin-and-unicorn/Domenichino_Virgin-and-unicorn/Domenichino_Virgin-and-unicorn.jpg'
 main_image = cv2.imread(main_image_path, cv2.IMREAD_GRAYSCALE)
