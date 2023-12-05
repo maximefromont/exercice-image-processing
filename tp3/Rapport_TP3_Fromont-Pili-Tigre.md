@@ -31,7 +31,15 @@ Distance: 14.0, TrainIdx: 716, QueryIdx: 756
 Distance: 16.0, TrainIdx: 428, QueryIdx: 441
 Distance: 16.0, TrainIdx: 422, QueryIdx: 457
 
-Nous avons essayé d'utiliser plusieurs autres méthodes, comme en essayant d'utiliser un détecteur SIFT, ou plusieurs détecteurs en même temps maos nous n'avons malheuresement pas réussie à obtenir plus de 10 keypoints pour chaque fragments.
+Voici les méthodes que nous avons employés pour résoudre ce problème :
+- Augmenter le paramètre nfeature (de 1000 à 100 000). Cette méthode n'a généré aucun résultat bénéfiques et à provoqué une perte de performance conséquente.
+- Diminuer le paramètre edgeThreshold (de 15 à 1). Cette méthode a grandement amélioré le résultat. Seulement 2 fragments (471 et 601) ne possède pas 10 au plus de keypoints.
+- Changer le paramètre scoreType du détecteur ORB (de ORB_HARRIS_SCORE à ORB_FAST_SCORE). Cette méthode n'a généré aucun résultat bénéfiques.
+- Essayer d'utiliser le détecteur SIFT. Cette méthode n'a pas généré de résultats convainquant par apport au détecteur ORB.
+- Essayer d'utiliser le détecteur SIFT en combinaison avec le détecteur ORB. Cette méthode n'a pas généré de résultats convainquant par apport au détecteur ORB seul.
+
+Notre expérimentation génère donc une sortie d'informations conséquentes dans le fichier associations.txt et manque de keypoints pour le fragment 471 et le fragment 601.
+Il est intéréssant de noter que nous pourrions potentiellement obtenir un meilleur résultat en appliquant un pré-traitement d'image (changement du contrastes ou supression du bruit par exemple) sur tout les fragments comme vu en cours. Cependant, ce n'est pas une option que nous avons considéré explorer au sein de ce TP.
 
 ### Exercice 2
 
@@ -51,18 +59,18 @@ En utilisant les associations (correspondances) entre les points clés de l'imag
 
 Vous trouverez cette implémentation dans le fichier TP3-EX2-Q2_Fromont-Pili-Tigre.py. Voici un exemple de sortie :
 
-Nombre de correspondances dans le sous-ensemble cohérent : 8
-Index des points correspondants dans le sous-ensemble cohérent : [271, 211, 483, 155, 884, 64, 918, 718]
-Paramètres de la transformation estimée (x, y, θ) : [[-2.29041063e-02 -6.14444154e-02  1.88806370e+02]
- [ 6.14444154e-02 -2.29041063e-02 -4.69055217e+01]]
+Nombre de correspondances dans le sous-ensemble cohérent : 9
+Index des points correspondants dans le sous-ensemble cohérent : [178, 417, 998, 598, 473, 215, 855, 908, 256]
+Paramètres de la transformation estimée (x, y, θ) : [[ 3.74570492e-02 -1.68224661e-02  6.25833467e+01]
+                                                     [ 1.68224661e-02  3.74570492e-02  3.11017692e+01]]
 
  #### Question 3
 
  Vous trouverez l'implémentation nécéssaire pour répondre à cette question dans le fichier TP3-EX2-Q3_Fromont-Pili-Tigre. Voici un exemple de sortie :
 
- Matrice de transformation optimale :
-[[-1.70682369e-03 -4.81246437e-03  1.40262069e+02]
- [ 4.81246437e-03 -1.70682369e-03  7.17968083e+01]]
+Matrice de transformation optimale :
+[[-1.70902808e-02 -8.52364417e-03  1.60886581e+02]
+ [ 8.52364417e-03 -1.70902808e-02  6.93179863e+01]]
 
  ### Exercice 3
 

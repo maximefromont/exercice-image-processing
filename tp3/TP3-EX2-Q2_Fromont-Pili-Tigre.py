@@ -16,7 +16,7 @@ import os
 main_image_path = 'tp3/Domenichino_Virgin-and-unicorn/Domenichino_Virgin-and-unicorn/Domenichino_Virgin-and-unicorn.jpg'
 main_image = cv2.imread(main_image_path, cv2.IMREAD_GRAYSCALE)
 
-orb = cv2.ORB_create(nfeatures=1000, scoreType=cv2.ORB_HARRIS_SCORE, edgeThreshold=15)
+orb = cv2.ORB_create(nfeatures=1000, scoreType=cv2.ORB_HARRIS_SCORE, edgeThreshold=1)
 
 fragments_dir = 'tp3/Domenichino_Virgin-and-unicorn/Domenichino_Virgin-and-unicorn/frag_eroded'
 
